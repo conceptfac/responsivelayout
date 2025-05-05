@@ -1,0 +1,19 @@
+{
+    "name": "com.conceptfactory.ui.responsivelayout.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5dce1e5efc474ce4791e7ab351a3ddb4",
+        "GUID:b449173de7e59714ca187ea960db9590",
+        "GUID:ca1a8d30230561e47a871b2f2acc37ea",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

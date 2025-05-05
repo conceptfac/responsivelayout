@@ -1,0 +1,24 @@
+{
+    "name": "com.conceptfactory.ui.responsivelayout",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5dce1e5efc474ce4791e7ab351a3ddb4"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "CONCEPT_CORE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.conceptfactory.core",
+            "expression": "1.0.0",
+            "define": "CONCEPT_CORE"
+        }
+    ],
+    "noEngineReferences": false
+}
