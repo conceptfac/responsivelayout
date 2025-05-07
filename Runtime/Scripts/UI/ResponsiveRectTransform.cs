@@ -20,10 +20,15 @@ namespace Concept.UI
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (landscapePreset == null)
+            if (landscapePreset == null) 
                 landscapePreset = CreatePreset("LandscapePreset");
             if (portraitPreset == null)
                 portraitPreset = CreatePreset("PortraitPreset");
+
+            landscapePreset.gameObject.SetActive(false);
+            portraitPreset.gameObject.SetActive(false);
+
+
         }
 #endif
 
@@ -45,6 +50,13 @@ namespace Concept.UI
             ApplyPreset((Screen.width >= Screen.height) ? landscapePreset : portraitPreset);
         }
 
+
+        private void OnDestroy()
+        {
+            if(landscapePreset) DestroyImmediate(landscapePreset.gameObject);
+            if(portraitPreset) DestroyImmediate(portraitPreset.gameObject);
+        }
+
         public RectTransform CreatePreset(string name)
         {
             RectTransform preset = transform.Find(name) as RectTransform;
@@ -52,7 +64,7 @@ namespace Concept.UI
             {
 
 
-                preset = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+                preset = new GameObject(name, typeof(RectTransform),typeof(PresetAdvice)).GetComponent<RectTransform>();
                 preset.transform.SetParent(transform, false);
                 preset.gameObject.SetActive(false);
             }
@@ -67,7 +79,6 @@ namespace Concept.UI
             public void ApplyPreset(RectTransform rectPreset)
             {
                 ScreenUtils.CloneRectTransform(rectPreset, _rectTransform);
-                Debug.LogWarning(gameObject.name + " ApplyPreset: " + rectPreset);
             }
 
             #region Callback Methods

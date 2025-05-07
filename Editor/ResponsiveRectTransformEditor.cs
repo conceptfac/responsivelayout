@@ -2,7 +2,6 @@
 using UnityEngine;
 using UnityEditor;
 using Concept.Core;
-using Amazon.Runtime;
 using Concept.Editor;
 
 namespace Concept.UI
@@ -12,22 +11,15 @@ namespace Concept.UI
     {
         public override void OnInspectorGUI()
         {
+            ResponsiveRectTransform element = (ResponsiveRectTransform)target;
             float fullWidth = EditorGUIUtility.currentViewWidth;
             float buttonWidth = 70f;
             float fieldWidth = fullWidth - buttonWidth - 32f;
             Vector2 gameViewResolution = GameViewResolutionMonitor.GetMainGameViewResolution();
-
-            ResponsiveRectTransform element = (ResponsiveRectTransform)target;
+            bool isLandscape = gameViewResolution.x >= gameViewResolution.y;
 
             // Verifica dependência
-            InputMonitor monitor = FindFirstObjectByType<InputMonitor>();
-            if (!monitor)
-            {
-                EditorGUILayout.HelpBox(
-                    "This component depends on an 'InputMonitor' MonoBehaviour to function correctly at runtime.",
-                    MessageType.Error
-                );
-            }
+           
 
             serializedObject.Update();
 
@@ -35,87 +27,14 @@ namespace Concept.UI
             var landscapePresetProp = serializedObject.FindProperty("landscapePreset");
             var portraitPresetProp = serializedObject.FindProperty("portraitPreset");
 
-            GUIStyle activeStyle = new GUIStyle(GUI.skin.label);
-            activeStyle.normal.textColor = Color.green;
-            activeStyle.alignment = TextAnchor.MiddleRight;
+            PresetAdviceEditor.CheckResolutionMonitor();
+
+            EditorGUILayout.Space();
+            DrawRectProperties(landscapePresetProp, isLandscape);
+            EditorGUILayout.Space();
+            DrawRectProperties(portraitPresetProp, !isLandscape);
 
 
-            EditorGUILayout.LabelField("Orientarion Rect Presets", EditorStyles.boldLabel);
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(landscapePresetProp, new GUIContent("Landscape Preset"));
-
-            // Adiciona o ícone de alerta ao lado do campo "landscapePreset" se o rectPreset for null
-            if (landscapePresetProp.objectReferenceValue == null)
-            {
-                GUIStyle warningStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    normal = { textColor = Color.yellow }
-                };
-                EditorGUILayout.LabelField("⚠", warningStyle, GUILayout.Width(20));
-            }
-
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if(gameViewResolution.x >= gameViewResolution.y)
-            GUILayout.Label("(Active)", activeStyle);
-
-            if (GUILayout.Button("Save Values", GUILayout.Width(100f)))
-            {
-                RectTransform rect = landscapePresetProp.objectReferenceValue as RectTransform;
-                if (rect != null)
-                    element.ClonePreset(rect);
-            }
-            if (GUILayout.Button("Preview", GUILayout.Width(100f)))
-            {
-                RectTransform rect = landscapePresetProp.objectReferenceValue as RectTransform;
-                if (rect != null)
-                    element.ApplyPreset(rect);
-            }
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
-            
-            EditorGUILayout.BeginVertical();
-
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(portraitPresetProp, new GUIContent("Portrait Preset"));
-
-            // Adiciona o ícone de alerta ao lado do campo "portraitPreset" se o rectPreset for null
-            if (portraitPresetProp.objectReferenceValue == null)
-            {
-                GUIStyle warningStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    normal = { textColor = Color.yellow }
-                };
-                EditorGUILayout.LabelField("⚠", warningStyle, GUILayout.Width(20));
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-
-            GUILayout.FlexibleSpace();
-            if (gameViewResolution.x < gameViewResolution.y)
-                GUILayout.Label("(Active)", activeStyle);
-
-            if (GUILayout.Button("Save Values", GUILayout.Width(100f)))
-            {
-                RectTransform rect = portraitPresetProp.objectReferenceValue as RectTransform;
-                if (rect != null)
-                    element.ClonePreset(rect);
-            }
-            if (GUILayout.Button("Preview", GUILayout.Width(100f)))
-            {
-                RectTransform rect = portraitPresetProp.objectReferenceValue as RectTransform;
-                if (rect != null)
-                    element.ApplyPreset(rect);
-            }
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndVertical();
 
             if (landscapePresetProp.objectReferenceValue == null || portraitPresetProp.objectReferenceValue == null)
             {
@@ -201,6 +120,80 @@ namespace Concept.UI
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void DrawRectProperties(SerializedProperty property, bool active)
+        {
+            ResponsiveRectTransform element = (ResponsiveRectTransform)target;
+            Color color = active ? Color.green : Color.gray;
+            GUIStyle activeStyle = new GUIStyle(GUI.skin.label)
+            {
+                normal = { textColor = color },
+                alignment = TextAnchor.MiddleRight
+            };
+
+
+            // Começa um bloco visual com fundo de box
+            EditorGUILayout.BeginVertical(GUI.skin.box);
+
+            // Desenha conteúdo aqui
+            EditorGUILayout.LabelField("Orientation Rect Presets", EditorStyles.boldLabel);
+            EditorGUILayout.Space(2);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Landscape Preset", EditorStyles.label);
+            GUILayout.FlexibleSpace();
+            if (active)
+                GUILayout.Label("(Active)", activeStyle);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Save Values", GUILayout.Width(100f)))
+            {
+                RectTransform rectProp = property.objectReferenceValue as RectTransform;
+                if (rectProp != null)
+                    element.ClonePreset(rectProp);
+            }
+
+            if (GUILayout.Button("Preview", GUILayout.Width(100f)))
+            {
+                RectTransform rectProp = property.objectReferenceValue as RectTransform;
+                if (rectProp != null)
+                    element.ApplyPreset(rectProp);
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+
+            // Fecha o bloco antes de capturar a área
+            EditorGUILayout.EndVertical();
+
+            // Agora, com o conteúdo desenhado, podemos pegar o retângulo real
+            Rect rect = GUILayoutUtility.GetLastRect();
+
+            const float padding = 6f;
+            const float horizontalMargin = 4f;
+            float x = rect.x - padding - horizontalMargin;
+            float width = EditorGUIUtility.currentViewWidth - x - 20f;
+            Rect borderRect = new Rect(
+                x,
+                rect.y - padding,
+                width,
+                rect.height + padding * 2
+            );
+
+
+
+
+            // Desenha o contorno
+            Handles.BeginGUI();
+            Handles.color = color;
+            Handles.DrawSolidRectangleWithOutline(borderRect, new Color(0, 0, 0, 0), color);
+            Handles.EndGUI();
+            EditorGUILayout.Space();
+
         }
     }
 }
