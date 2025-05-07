@@ -21,7 +21,7 @@
     "url": "https://github.com/conceptfac/responsivelayout.git"
   },
   "dependencies": {
-    "com.conceptfactory.core": "1.0.0"
+    "com.conceptfactory.core": "https://github.com/conceptfac/com.conceptfactory.core.git"
   },
   "samples": [
     {
