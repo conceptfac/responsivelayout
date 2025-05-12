@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Concept.UI;
 using UnityEngine.Events;
+using Concept.Helpers;
 
 [CustomEditor(typeof(ResponsiveCallbackEvents))]
     [CanEditMultipleObjects]
@@ -83,9 +84,9 @@ using UnityEngine.Events;
         if (GUILayout.Button("Simulate Callbacks", GUILayout.Width(120f)))
         {
             ResponsiveCallbackEvents element = (ResponsiveCallbackEvents)target;
-
                 Vector2Int res = (property.name == "OnLandscapeOrientation") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1900);
-                GameViewUtils.SetGameViewSize(res.x, res.y);
+            string name = $"({ScreenUtils.GetAspectLabel(res)}) {((property.name == "OnLandscapeOrientation") ? "Landscape" : "Portrait")} {res.x} x {res.y}";
+                GameViewUtils.SetGameViewSize(res.x, res.y, name);
 
             if (property.name == "OnLandscapeOrientation")
             {

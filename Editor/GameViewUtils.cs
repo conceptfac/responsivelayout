@@ -6,33 +6,46 @@ using System.Reflection;
 public static class GameViewUtils
 {
 
-    public static void SetGameViewSize(int width, int height)
+    public static void SetGameViewSize(int width, int height, string name)
     {
         var sizesInstance = GetGroup();
 
-        var addCustomSize = sizesInstance.GetType().GetMethod("AddCustomSize", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         var gameViewSizeType = sizesInstance.GetType().Assembly.GetType("UnityEditor.GameViewSize");
         var gameViewSizeTypeEnum = sizesInstance.GetType().Assembly.GetType("UnityEditor.GameViewSizeType");
 
+        var getDisplayTexts = sizesInstance.GetType().GetMethod("GetDisplayTexts", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        string[] displayTexts = getDisplayTexts.Invoke(sizesInstance, null) as string[];
+
+        // Verifica se já existe uma resolução com esse nome
+        string targetName = name;
+        for (int i = 0; i < displayTexts.Length; i++)
+        {
+            if (displayTexts[i].Contains(targetName))
+            {
+                SetSize(i);
+                return;
+            }
+        }
+
+        // Se não existe, cria uma nova
         var ctor = gameViewSizeType.GetConstructor(new Type[] {
-            gameViewSizeTypeEnum, typeof(int), typeof(int), typeof(string)
-        });
+        gameViewSizeTypeEnum, typeof(int), typeof(int), typeof(string)
+    });
 
         var fixedResolutionEnum = Enum.Parse(gameViewSizeTypeEnum, "FixedResolution");
 
         var newSize = ctor.Invoke(new object[] {
-            fixedResolutionEnum, width, height, $"{width}x{height}_TEMP"
-        });
+        fixedResolutionEnum, width, height, targetName
+    });
 
+        var addCustomSize = sizesInstance.GetType().GetMethod("AddCustomSize", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         addCustomSize.Invoke(sizesInstance, new object[] { newSize });
 
-        // Select the new size
-        var getDisplayTexts = sizesInstance.GetType().GetMethod("GetDisplayTexts", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        string[] displayTexts = getDisplayTexts.Invoke(sizesInstance, null) as string[];
-
+        // Recarrega e seleciona
+        displayTexts = getDisplayTexts.Invoke(sizesInstance, null) as string[];
         for (int i = 0; i < displayTexts.Length; i++)
         {
-            if (displayTexts[i].Contains($"{width}x{height}_TEMP"))
+            if (displayTexts[i].Contains(targetName))
             {
                 SetSize(i);
                 break;

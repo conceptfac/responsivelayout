@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using Concept.Editor;
+using Concept.Helpers;
 using Unity.Android.Gradle;
 using UnityEditor;
 using UnityEngine;
@@ -100,7 +101,7 @@ namespace Concept.UI
             if (GUILayout.Button("Preview", GUILayout.Width(100f)))
             {
                 Vector2Int res = (property.name == "landscapePreset") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1900);
-                GameViewUtils.SetGameViewSize(res.x, res.y);
+                GameViewUtils.SetGameViewSize(res.x, res.y,$"({ScreenUtils.GetAspectLabel(res)}) Landscape {res.x}x{res.y}");
             }
 
 /*

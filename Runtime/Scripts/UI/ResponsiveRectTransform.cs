@@ -57,10 +57,10 @@ namespace Concept.UI
         }
 
         #region Callback Methods
-        private void OnResolutionChanged(float width, float height)
+        private void OnResolutionChanged(int width, int height)
         {
             RectTransform preset = null;
-            Vector2 currentRes = new Vector2(width, height);
+            Vector2Int currentRes = new Vector2Int(width, height);
 
             if (!forceLayoutByOrientation)
             {

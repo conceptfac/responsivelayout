@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using Concept.Editor;
 using Concept.Helpers;
+using System.Security.Cryptography;
 
 namespace Concept.UI
 {
@@ -150,8 +151,8 @@ namespace Concept.UI
 
             if (GUILayout.Button("Preview", GUILayout.Width(100f)))
             {
-                Vector2Int res = (property.name == "landscapePreset") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1900);
-                GameViewUtils.SetGameViewSize(res.x,res.y);
+                Vector2Int res = (property.name == "landscapePreset") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1920);
+                GameViewUtils.SetGameViewSize(res.x, res.y, $"({ScreenUtils.GetAspectLabel(res)}) Landscape {res.x}x{res.y}");
             }
 
             GUILayout.FlexibleSpace();
@@ -252,15 +253,13 @@ namespace Concept.UI
 
                 if (GUILayout.Button("Preview", GUILayout.Width(buttonWidth)))
                 {
-                    GameViewUtils.SetGameViewSize(resolutionProp.vector2IntValue.x, resolutionProp.vector2IntValue.y);
+                    string name = $"({ScreenUtils.GetAspectLabel(resolutionProp.vector2IntValue)}) {(resolutionProp.vector2IntValue.x >= resolutionProp.vector2IntValue.y?"Landscape":"Portrait")} {resolutionProp.vector2IntValue.x}x{resolutionProp.vector2IntValue.y}";
+                    GameViewUtils.SetGameViewSize(resolutionProp.vector2IntValue.x, resolutionProp.vector2IntValue.y, name);
                 }
-
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
-
                 GUILayout.Space(12); // margem direita
                 GUILayout.EndHorizontal();
-
                 Rect boxRect = GUILayoutUtility.GetLastRect();
                 DrawBoards(boxRect, color);
 
@@ -316,7 +315,7 @@ namespace Concept.UI
 
                 if (resolutionProp != null)
                 {
-                    Vector2 res = resolutionProp.vector2IntValue;
+                    Vector2Int res = resolutionProp.vector2IntValue;
                     string label = ScreenUtils.GetAspectLabel(res);
 
 

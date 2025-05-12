@@ -80,7 +80,7 @@ namespace Concept.UI
 
         }
 
-        private void OnResolutionChanged(float width, float height)
+        private void OnResolutionChanged(int width, int height)
         {
             ApplyPreset((width >= height) ? landscapePreset : portraitPreset);
         }

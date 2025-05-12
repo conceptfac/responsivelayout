@@ -26,7 +26,7 @@ namespace Concept.UI
             OnResolutionChanged(Screen.width, Screen.height);
         }
 
-        private void OnResolutionChanged(float width, float height)
+        private void OnResolutionChanged(int width, int height)
         {
             if (width >= height) 
                 OnLandscapeOrientation?.Invoke();
