@@ -15,34 +15,21 @@ namespace Concept.UI
         public RectTransform landscapePreset;
         public RectTransform portraitPreset;
 
-        public RectPreset[] rectPresets; //Desenhar cada classe com o botão preview ao lado da propriedade preset
+        public RectPreset[] landscapePresets;
+        public RectPreset[] portraitPresets;
 
-#if UNITY_EDITOR
-        private void OnValidate()
+
+        private void OnEnable()
         {
-            if (landscapePreset == null) 
-                landscapePreset = CreatePreset("LandscapePreset");
-            if (portraitPreset == null)
-                portraitPreset = CreatePreset("PortraitPreset");
+            _rectTransform = GetComponent<RectTransform>();
+            ScreenUtils.OnResolutionChanged += OnResolutionChanged;
+        }
 
-            landscapePreset.gameObject.SetActive(false);
-            portraitPreset.gameObject.SetActive(false);
-
+        private void OnDisable()
+        {
+            ScreenUtils.OnResolutionChanged -= OnResolutionChanged;
 
         }
-#endif
-
-            private void OnEnable()
-            {
-                _rectTransform = GetComponent<RectTransform>();
-                ScreenUtils.OnResolutionChanged += OnResolutionChanged;
-            }
-
-            private void OnDisable()
-            {
-                ScreenUtils.OnResolutionChanged -= OnResolutionChanged;
-
-            }
 
         private void Start()
         {
@@ -53,67 +40,95 @@ namespace Concept.UI
 
         private void OnDestroy()
         {
-            if(landscapePreset) DestroyImmediate(landscapePreset.gameObject);
-            if(portraitPreset) DestroyImmediate(portraitPreset.gameObject);
+            if (landscapePreset) DestroyImmediate(landscapePreset.gameObject);
+            if (portraitPreset) DestroyImmediate(portraitPreset.gameObject);
         }
 
-        public RectTransform CreatePreset(string name)
+
+
+        public void ClonePreset(RectTransform target)
         {
-            RectTransform preset = transform.Find(name) as RectTransform;
-            if (preset == null)
-            {
-
-
-                preset = new GameObject(name, typeof(RectTransform),typeof(PresetAdvice)).GetComponent<RectTransform>();
-                preset.transform.SetParent(transform, false);
-                preset.gameObject.SetActive(false);
-            }
-            return preset;
+            ScreenUtils.CloneRectTransform(_rectTransform, target);
         }
 
-            public void ClonePreset(RectTransform target)
-            {
-                ScreenUtils.CloneRectTransform(_rectTransform,target);
-            }
+        public void ApplyPreset(RectTransform rectPreset)
+        {
+            ScreenUtils.CloneRectTransform(rectPreset, _rectTransform);
+        }
 
-            public void ApplyPreset(RectTransform rectPreset)
-            {
-                ScreenUtils.CloneRectTransform(rectPreset, _rectTransform);
-            }
-
-            #region Callback Methods
-            private void OnResolutionChanged(float width, float height)
-            {
+        #region Callback Methods
+        private void OnResolutionChanged(float width, float height)
+        {
             RectTransform preset = null;
+            Vector2 currentRes = new Vector2(width, height);
+
             if (!forceLayoutByOrientation)
             {
-                Vector2 res = new Vector2(width, height);
-                preset = rectPresets.FirstOrDefault(p => p.resolution == res)?.rectPreset;
-            }
+                RectPreset[] presets = (width >= height) ? landscapePresets : portraitPresets;
 
-                if(preset == null)
+                string currentAspect = ScreenUtils.GetAspectLabel(currentRes);
+                RectPreset closestPreset = null;
+                float closestDistance = float.MaxValue;
+
+                foreach (var p in presets)
                 {
+                    if (p.rectPreset == null) continue;
 
-                if (width >= height)
-                    preset = landscapePreset;
-                else
-                    preset = portraitPreset;
+                    string presetAspect = ScreenUtils.GetAspectLabel(p.resolution);
+
+                    // Se aspecto é válido, só compara com presets do mesmo aspect ratio
+                    if (currentAspect != "Invalid" && presetAspect != currentAspect)
+                        continue;
+
+                    float dist = Vector2.Distance(currentRes, p.resolution);
+                    if (dist < closestDistance)
+                    {
+                        closestDistance = dist;
+                        closestPreset = p;
+                    }
                 }
 
-                ApplyPreset(preset);
+                // Se nenhum preset foi encontrado com o mesmo aspect, faz fallback para qualquer um
+                if (closestPreset == null && currentAspect != "Invalid")
+                {
+                    foreach (var p in presets)
+                    {
+                        if (p.rectPreset == null) continue;
 
+                        float dist = Vector2.Distance(currentRes, p.resolution);
+                        if (dist < closestDistance)
+                        {
+                            closestDistance = dist;
+                            closestPreset = p;
+                        }
+                    }
+                }
 
+                if (closestPreset != null)
+                {
+                    preset = closestPreset.rectPreset;
+                }
+            }
+
+            if (preset == null)
+            {
+                preset = (width >= height) ? landscapePreset : portraitPreset;
+            }
+
+            Debug.Log("Applying preset resolution: " + preset.name);
+            ApplyPreset(preset);
         }
+
         #endregion
 
 
     }
-        [Serializable]
-        public class RectPreset
-        {
-            public Vector2 resolution = Vector2.zero;
-            [Tooltip("Use a empty Gameobject with RectTransform to copy that properties.")]
-            public RectTransform rectPreset;
+    [Serializable]
+    public class RectPreset
+    {
+        [Min(0)] public Vector2Int resolution = Vector2Int.zero;
+        [Tooltip("Use a empty Gameobject with RectTransform to copy that properties.")]
+        public RectTransform rectPreset;
 
-        }
     }
+}

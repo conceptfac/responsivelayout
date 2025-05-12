@@ -84,6 +84,9 @@ using UnityEngine.Events;
         {
             ResponsiveCallbackEvents element = (ResponsiveCallbackEvents)target;
 
+                Vector2Int res = (property.name == "OnLandscapeOrientation") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1900);
+                GameViewUtils.SetGameViewSize(res.x, res.y);
+
             if (property.name == "OnLandscapeOrientation")
             {
                 element.OnLandscapeOrientation?.Invoke();

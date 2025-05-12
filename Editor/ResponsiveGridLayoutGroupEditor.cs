@@ -96,8 +96,17 @@ namespace Concept.UI
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
+
             if (GUILayout.Button("Preview", GUILayout.Width(100f)))
             {
+                Vector2Int res = (property.name == "landscapePreset") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1900);
+                GameViewUtils.SetGameViewSize(res.x, res.y);
+            }
+
+/*
+            if (GUILayout.Button("Preview", GUILayout.Width(100f)))
+            {
+
                 ResponsiveGridLayoutGroup element = (ResponsiveGridLayoutGroup)target;
                 if (property.name == "landscapePreset")
                 {
@@ -108,7 +117,7 @@ namespace Concept.UI
                     element.ApplyPreset(element.portraitPreset);
                 }
             }
-
+*/
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
