@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor;
 using System;
 using System.Reflection;
@@ -70,7 +71,21 @@ public static class GameViewUtils
         var instance = instanceProp.GetValue(null, null);
 
         var getGroup = T.GetMethod("GetGroup");
-        return getGroup.Invoke(instance, new object[] { 0 });
+        return getGroup.Invoke(instance, new object[] { GetCurrentGroupTypeIndex() });
     }
+
+    [MenuItem("Tools/Get Current Group Type Index")]
+    private static int GetCurrentGroupTypeIndex()
+    {
+        var gameViewSizeGroupType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizeGroupType");
+
+        // Pega o nome da build target atual (ex: Android, Standalone, etc.)
+        var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup.ToString();
+
+        // Faz o parse do enum interno da Unity
+        var currentGroup = Enum.Parse(gameViewSizeGroupType, buildTargetGroup);
+        return (int)currentGroup;
+    }
+
 }
 #endif
