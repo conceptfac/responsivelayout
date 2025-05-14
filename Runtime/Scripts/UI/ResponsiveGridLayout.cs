@@ -85,6 +85,12 @@ namespace Concept.UI
 
         private void OnResolutionChanged(int width, int height)
         {
+            if(presets == null)
+            {
+                Debug.LogError($"[ResponsiveGridLayoutGroup] Invalid presets in {gameObject.name}");
+                return;
+            }
+
             GridLayoutProperties preset = null;
             Vector2Int currentRes = new Vector2Int(width, height);
 

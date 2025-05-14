@@ -58,7 +58,11 @@ namespace Concept.UI
         #region Callback Methods
         private void OnResolutionChanged(int width, int height)
         {
-            if (presets == null) return;
+            if (presets == null)
+            {
+                Debug.LogError($"[ResponsiveRectTransform] Invalid presets in {gameObject.name}");
+                return;
+            }
 
             RectPreset preset = null;
             Vector2Int currentRes = new Vector2Int(width, height);
