@@ -1,3 +1,4 @@
+using Concept.Helpers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,11 +6,13 @@ using UnityEngine.UI;
 namespace Concept.UI
 {
 
-
+    [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(TextMeshProUGUI))]
     [RequireComponent(typeof(ContentSizeFitter))]
     public class ExpandableText : LayoutElement
     {
+        private RectTransform _rectTransform;
+
         private TextMeshProUGUI _textMesh;
         private ContentSizeFitter _sizeFitter;
         private Button _button;
@@ -33,6 +36,7 @@ namespace Concept.UI
         protected override void Awake()
         {
             base.Awake();
+            _rectTransform = GetComponent<RectTransform>();
             _textMesh = GetComponent<TextMeshProUGUI>();
             _sizeFitter = GetComponent<ContentSizeFitter>();
         }
@@ -60,6 +64,7 @@ namespace Concept.UI
         protected override void Start()
         {
             base.Start();
+            AsyncOperationExtensions.CallDelayedAction(() => Rebuild(),100);
         }
 
         private void OnClick()
@@ -73,14 +78,25 @@ namespace Concept.UI
                 _sizeFitter.verticalFit = ContentSizeFitter.FitMode.MinSize;
             }
 
-            LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
-            LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponentInParent<RectTransform>());
+
+            Rebuild();
+        }
+
+        private void Rebuild()
+        {
+
+            if (this == null) return;
+            _rectTransform.ForceUpdateRectTransforms();
+            RectTransform _parentRectTransform = GetComponentInParent<RectTransform>();
+            _parentRectTransform.ForceUpdateRectTransforms();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rectTransform);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_parentRectTransform);
 
             foreach (var rect in _forceRebuildTransforms)
             {
+                rect.ForceUpdateRectTransforms();
                 LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
             }
-
         }
     }
 

@@ -17,10 +17,11 @@ namespace Concept.UI
     /// <remarks>
     /// The GridLayoutGroup component is used to layout child layout elements in a uniform grid where all cells have the same size. The size and the spacing between cells is controlled by the GridLayoutGroup itself. The children have no influence on their sizes.
     /// </remarks>
+    [RequireComponent(typeof(RectTransform))]
     [ExecuteAlways]
     public class ResponsiveGridLayoutGroup : GridLayoutGroup
     {
-        [SerializeField]
+        private RectTransform _rectTransform;
         public GridLayoutProperties[] presets;
 
 #if UNITY_EDITOR
@@ -58,6 +59,7 @@ namespace Concept.UI
         protected override void OnEnable()
         {
             base.OnEnable();
+            _rectTransform = GetComponent<RectTransform>();
             ScreenUtils.OnResolutionChanged += OnResolutionChanged;
 
         }
@@ -76,6 +78,8 @@ namespace Concept.UI
 
 
             OnResolutionChanged(Screen.width, Screen.height);
+            _rectTransform.ForceUpdateRectTransforms();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rectTransform);
         }
 
 
@@ -132,7 +136,7 @@ namespace Concept.UI
 
             if (preset != null)
             {
-                Debug.Log("Applying preset resolution: " + preset.resolution);
+              //  Debug.Log("Applying preset resolution: " + preset.resolution);
 #if UNITY_EDITOR
                 _activePreset = Array.IndexOf(presets, preset);
 #endif

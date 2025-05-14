@@ -3,6 +3,7 @@ using Concept.Helpers;
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Concept.UI
 {
@@ -33,7 +34,8 @@ namespace Concept.UI
         {
             if (!Application.isPlaying) return;
             OnResolutionChanged(Screen.width, Screen.height);
-
+            _rectTransform.ForceUpdateRectTransforms();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rectTransform);
         }
 
 
@@ -108,7 +110,7 @@ namespace Concept.UI
 
             if (preset != null)
             {
-                Debug.Log("Applying preset resolution: " + preset.resolution);
+                //Debug.Log("Applying preset resolution: " + preset.resolution);
 #if UNITY_EDITOR
                 _activePreset = Array.IndexOf(presets, preset);
 #endif
