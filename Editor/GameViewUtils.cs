@@ -3,12 +3,23 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Reflection;
+using Concept.Helpers;
 
 public static class GameViewUtils
 {
 
-    public static void SetGameViewSize(int width, int height, string name)
+
+    public static void SetGameViewSize(Vector2Int res)
     {
+        SetGameViewSize(res.x, res.y);
+    }
+    public static void SetGameViewSize(int width, int height)
+    {
+
+        string name = $"({ScreenUtils.GetAspectLabel(width, height)}) {(width >= height ? "Landscape" : "Portrait")} {width}x{height}";
+
+
+
         var sizesInstance = GetGroup();
 
         var gameViewSizeType = sizesInstance.GetType().Assembly.GetType("UnityEditor.GameViewSize");
@@ -82,9 +93,15 @@ public static class GameViewUtils
         // Pega o nome da build target atual (ex: Android, Standalone, etc.)
         var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup.ToString();
 
-        // Faz o parse do enum interno da Unity
-        var currentGroup = Enum.Parse(gameViewSizeGroupType, buildTargetGroup);
-        return (int)currentGroup;
+        try
+        {
+            var currentGroup = Enum.Parse(gameViewSizeGroupType, buildTargetGroup);
+            return (int)currentGroup;
+        }
+        catch
+        {
+            return 0; // Fallback para Standalone
+        }
     }
 
 }

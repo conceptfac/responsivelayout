@@ -37,82 +37,47 @@ namespace Concept.UI
             serializedObject.Update();
 
             // Exibir a propriedade forceLayoutByOrientation
-            var landscapePresetProp = serializedObject.FindProperty("landscapePreset");
-            var portraitPresetProp = serializedObject.FindProperty("portraitPreset");
 
             PresetAdviceEditor.CheckResolutionMonitor();
 
-            SerializedProperty forceLayoutProp = serializedObject.FindProperty("forceLayoutByOrientation");
-            EditorGUILayout.PropertyField(forceLayoutProp);
-
-
-            if (landscapePresetProp.objectReferenceValue == null || portraitPresetProp.objectReferenceValue == null)
-            {
-                EditorGUILayout.HelpBox(
-                    "Both Landscape and Portrait presets are required and must have RectTransforms assigned to them.",
-                    MessageType.Warning
-                );
-            }
 
             EditorGUILayout.Space();
-            if (forceLayoutProp.boolValue)
+
+
+            EditorGUILayout.LabelField("Resolution Rect Presets", EditorStyles.boldLabel);
+
+            SerializedProperty presetsProp = serializedObject.FindProperty("presets");
+
+
+
+            DrawPresetProperties(presetsProp);
+            if (HasInvalidPreset(presetsProp))
             {
-
-                element.landscapePreset = CreatePreset("LandscapePreset", element.transform);
-                DrawRectProperties(landscapePresetProp, isLandscape);
-                EditorGUILayout.Space();
-                element.portraitPreset = CreatePreset("PortraitPreset", element.transform);
-                DrawRectProperties(portraitPresetProp, !isLandscape);
-            }
-            else
-            {
-
-
-                // Exibe a lista de presets se forceLayoutByOrientation for falso
-                EditorGUILayout.Space(10);
-                EditorGUILayout.LabelField("Resolution Rect Presets", EditorStyles.boldLabel);
-
-                SerializedProperty landscapePresetsProp = serializedObject.FindProperty("landscapePresets");
-
-
-
-                DrawPresetProperties(landscapePresetsProp);
-                if (HasInvalidPreset(landscapePresetsProp))
-                {
-                    EditorGUILayout.HelpBox(
-                  "There are invalid Landscape Presets. Please fix it.",
-                  MessageType.Error
-                  );
-
-                }
-
-
-                EditorGUILayout.Space();
-                SerializedProperty portraitPresetsProp = serializedObject.FindProperty("portraitPresets");
-
-
-
-                DrawPresetProperties(portraitPresetsProp);
-                if (HasInvalidPreset(portraitPresetsProp))
-                {
-                    EditorGUILayout.HelpBox(
-                  "There are invalid Portrait Presets. Please fix it.",
-                  MessageType.Error
-                  );
-
-                }
-
-                if (landscapePresetsProp.arraySize == 0 && portraitPresetsProp.arraySize == 0)
-                {
-
-                    EditorGUILayout.HelpBox(
-                  "At least one preset must be added. Alternatively, you can use 'Force Layout By Orientation instead'.",
-                  MessageType.Error
-                  );
-                }
-
+                EditorGUILayout.HelpBox(
+              "There are invalid Presets. Please fix it.",
+              MessageType.Error
+              );
 
             }
+
+
+            EditorGUILayout.Space();
+
+
+
+
+
+            if (presetsProp.arraySize == 0)
+            {
+
+                EditorGUILayout.HelpBox(
+              "At least one preset must be added to Responsive Rect Transform works.",
+              MessageType.Error
+              );
+            }
+
+
+
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -125,7 +90,7 @@ namespace Concept.UI
             GUILayout.BeginHorizontal();       // Início da margem horizontal
 
             string orientationName = (property.name == "landscapePreset" ? "Landscape" : "Portrait");
-            Texture2D icon = LoadIcon($"Icons/ICO_Orientation_{orientationName}.png");
+            Texture2D icon = LoadIcon(this, $"Icons/ICO_Orientation_{orientationName}.png");
             if (icon) GUILayout.Label(icon, GUILayout.Width(32), GUILayout.Height(32));
 
             EditorGUILayout.BeginVertical(GUI.skin.box);
@@ -152,7 +117,7 @@ namespace Concept.UI
             if (GUILayout.Button("Preview", GUILayout.Width(100f)))
             {
                 Vector2Int res = (property.name == "landscapePreset") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1920);
-                GameViewUtils.SetGameViewSize(res.x, res.y, $"({ScreenUtils.GetAspectLabel(res)}) Landscape {res.x}x{res.y}");
+                GameViewUtils.SetGameViewSize(res);
             }
 
             GUILayout.FlexibleSpace();
@@ -172,15 +137,10 @@ namespace Concept.UI
 
         private void DrawPresetProperties(SerializedProperty property)
         {
-            float fullWidth = EditorGUIUtility.currentViewWidth;
-            float buttonWidth = 70f;
-            float fieldWidth = fullWidth - buttonWidth - 32f;
-            string orientationName = (property.name == "landscapePresets" ? "Landscape" : "Portrait");
 
 
             int indexToRemove = -1;
 
-            EditorGUILayout.LabelField(property.displayName, EditorStyles.label);
             EditorGUILayout.Space();
             for (int i = 0; i < property.arraySize; i++)
             {
@@ -189,13 +149,17 @@ namespace Concept.UI
                 SerializedProperty rectTransformProp = item.FindPropertyRelative("rectPreset");
 
                 bool active = resolutionProp.vector2IntValue == gameViewResolution;
+                bool isLandscape = resolutionProp.vector2IntValue.x >= resolutionProp.vector2IntValue.y;
+                string orientationName = (isLandscape ? "Landscape" : "Portrait");
 
                 Color color = active ? Color.green : Color.gray;
                 activeStyle.normal.textColor = color;
+                string aspect = ScreenUtils.GetAspectLabel(resolutionProp.vector2IntValue);
+                if (aspect == "Invalid") orientationName = aspect;
 
                 GUILayout.BeginHorizontal(); // Adiciona espaço à esquerda e direita
-                Texture2D icon = LoadIcon($"Icons/ICO_Orientation_{orientationName}.png");
-                if(icon) GUILayout.Label(icon, GUILayout.Width(32), GUILayout.Height(32));
+                Texture2D icon = LoadIcon(this, $"Icons/ICO_Orientation_{orientationName}.png");
+                if (icon) GUILayout.Label(icon, GUILayout.Width(32), GUILayout.Height(32));
 
                 EditorGUILayout.BeginVertical(GUI.skin.box);
 
@@ -214,7 +178,6 @@ namespace Concept.UI
                     EditorGUILayout.IntField(resolutionProp.vector2IntValue.y, GUILayout.Width(50))
                 );
 
-                string aspect = ScreenUtils.GetAspectLabel(resolutionProp.vector2IntValue);
 
                 if ((property.name == "landscapePresets" && resolutionProp.vector2IntValue.x < resolutionProp.vector2IntValue.y)
                     || (property.name == "portraitPresets" && resolutionProp.vector2IntValue.x >= resolutionProp.vector2IntValue.y))
@@ -251,10 +214,9 @@ namespace Concept.UI
                         element.ClonePreset(rect);
                 }
 
-                if (GUILayout.Button("Preview", GUILayout.Width(buttonWidth)))
+                if (GUILayout.Button("Preview", GUILayout.Width(70f)))
                 {
-                    string name = $"({ScreenUtils.GetAspectLabel(resolutionProp.vector2IntValue)}) {(resolutionProp.vector2IntValue.x >= resolutionProp.vector2IntValue.y?"Landscape":"Portrait")} {resolutionProp.vector2IntValue.x}x{resolutionProp.vector2IntValue.y}";
-                    GameViewUtils.SetGameViewSize(resolutionProp.vector2IntValue.x, resolutionProp.vector2IntValue.y, name);
+                    GameViewUtils.SetGameViewSize(resolutionProp.vector2IntValue);
                 }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
@@ -276,6 +238,8 @@ namespace Concept.UI
                     RectTransform newPreset = CreatePreset(presetName, element.transform);
                     rectTransformProp.objectReferenceValue = newPreset;
                 }
+                EditorGUILayout.Space();
+
             }
 
             if (indexToRemove >= 0)
@@ -293,17 +257,21 @@ namespace Concept.UI
                 }
 
                 property.DeleteArrayElementAtIndex(indexToRemove);
+
+                if (element._activePreset == indexToRemove && element.presets.Length > 0)
+                    GameViewUtils.SetGameViewSize(element.presets[0].resolution);
+
             }
 
             EditorGUILayout.Space();
-            if (GUILayout.Button($"Add {orientationName} Preset"))
+            if (GUILayout.Button($"Add Rect Preset"))
             {
                 AddPreset(property);
             }
         }
 
 
-        private bool HasInvalidPreset(SerializedProperty property)
+        public static bool HasInvalidPreset(SerializedProperty property)
         {
             bool hasInvalidAspect = false;
 
@@ -333,7 +301,7 @@ namespace Concept.UI
             return hasInvalidAspect;
         }
 
-        private void DrawBoards(Rect rect, Color color)
+        public static void DrawBoards(Rect rect, Color color)
         {
             const float padding = 6f;
             const float horizontalMargin = 4f;
@@ -375,16 +343,16 @@ namespace Concept.UI
 
             // Exemplo: zera o campo "resolution"
             SerializedProperty resolutionProp = newElement.FindPropertyRelative("resolution");
-                resolutionProp.vector2IntValue = Vector2Int.zero;
+            resolutionProp.vector2IntValue = Vector2Int.zero;
             SerializedProperty rectProp = newElement.FindPropertyRelative("rectPreset");
             string presetName = $"({ScreenUtils.GetAspectLabel(gameViewResolution)}) {(property.name == "landscapePresets" ? "Landscape" : "Portrait")} {resolutionProp.vector2IntValue.x}x{resolutionProp.vector2IntValue.y}";
-            rectProp.objectReferenceValue = CreatePreset(presetName,element.transform);
+            rectProp.objectReferenceValue = CreatePreset(presetName, element.transform);
         }
 
-        private Texture2D LoadIcon(string relativePathFromScript)
+        public static Texture2D LoadIcon(object sender, string relativePathFromScript)
         {
             // Encontra o caminho do script atual
-            MonoScript script = MonoScript.FromScriptableObject(this);
+            MonoScript script = MonoScript.FromScriptableObject((ScriptableObject)sender);
             string scriptPath = AssetDatabase.GetAssetPath(script);
 
             // Resolve o caminho base

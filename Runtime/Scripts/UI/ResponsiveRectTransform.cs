@@ -11,13 +11,11 @@ namespace Concept.UI
     public class ResponsiveRectTransform : MonoBehaviour
     {
         private RectTransform _rectTransform;
-        public bool forceLayoutByOrientation = true;
-        public RectTransform landscapePreset;
-        public RectTransform portraitPreset;
+        public RectPreset[] presets;
 
-        public RectPreset[] landscapePresets;
-        public RectPreset[] portraitPresets;
-
+#if UNITY_EDITOR
+        public int _activePreset;
+#endif
 
         private void OnEnable()
         {
@@ -34,14 +32,13 @@ namespace Concept.UI
         private void Start()
         {
             if (!Application.isPlaying) return;
-            ApplyPreset((Screen.width >= Screen.height) ? landscapePreset : portraitPreset);
+            OnResolutionChanged(Screen.width, Screen.height);
+
         }
 
 
         private void OnDestroy()
         {
-            if (landscapePreset) DestroyImmediate(landscapePreset.gameObject);
-            if (portraitPreset) DestroyImmediate(portraitPreset.gameObject);
         }
 
 
@@ -59,12 +56,11 @@ namespace Concept.UI
         #region Callback Methods
         private void OnResolutionChanged(int width, int height)
         {
-            RectTransform preset = null;
+            if (presets == null) return;
+
+            RectPreset preset = null;
             Vector2Int currentRes = new Vector2Int(width, height);
 
-            if (!forceLayoutByOrientation)
-            {
-                RectPreset[] presets = (width >= height) ? landscapePresets : portraitPresets;
 
                 string currentAspect = ScreenUtils.GetAspectLabel(currentRes);
                 RectPreset closestPreset = null;
@@ -106,17 +102,19 @@ namespace Concept.UI
 
                 if (closestPreset != null)
                 {
-                    preset = closestPreset.rectPreset;
+                    preset = closestPreset;
                 }
-            }
 
-            if (preset == null)
+
+            if (preset != null)
             {
-                preset = (width >= height) ? landscapePreset : portraitPreset;
+                Debug.Log("Applying preset resolution: " + preset.resolution);
+#if UNITY_EDITOR
+                _activePreset = Array.IndexOf(presets, preset);
+#endif
+                ApplyPreset(preset.rectPreset);
             }
 
-            Debug.Log("Applying preset resolution: " + preset.name);
-            ApplyPreset(preset);
         }
 
         #endregion

@@ -85,8 +85,7 @@ using Concept.Helpers;
         {
             ResponsiveCallbackEvents element = (ResponsiveCallbackEvents)target;
                 Vector2Int res = (property.name == "OnLandscapeOrientation") ? new Vector2Int(1920, 1080) : new Vector2Int(1080, 1900);
-            string name = $"({ScreenUtils.GetAspectLabel(res)}) {((property.name == "OnLandscapeOrientation") ? "Landscape" : "Portrait")} {res.x} x {res.y}";
-                GameViewUtils.SetGameViewSize(res.x, res.y, name);
+                GameViewUtils.SetGameViewSize(res);
 
             if (property.name == "OnLandscapeOrientation")
             {

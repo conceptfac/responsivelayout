@@ -21,13 +21,11 @@ namespace Concept.UI
     public class ResponsiveGridLayoutGroup : GridLayoutGroup
     {
         [SerializeField]
-        public GridLayoutProperties landscapePreset;
-        public GridLayoutProperties portraitPreset;
+        public GridLayoutProperties[] presets;
 
 #if UNITY_EDITOR
-
-        public GridLayoutProperties lastLandscapeLayout;
-        public GridLayoutProperties lastPortraitLayout;
+        public int _activePreset;
+        private GridLayoutProperties _lastPreset;
         protected override void OnValidate()
         {
             base.OnValidate();
@@ -35,26 +33,25 @@ namespace Concept.UI
             EditorApplication.delayCall += () =>
             {
                 if (this == null) return; // Evita erros se o objeto foi destruído
-
-                string currentLandscape = JsonUtility.ToJson(landscapePreset);
-                string lastLandscape = JsonUtility.ToJson(lastLandscapeLayout);
-
-                if (landscapePreset.isActive && currentLandscape != lastLandscape)
+                if(presets.Length <= _activePreset)
                 {
-                    ApplyPreset(landscapePreset);
-                    lastLandscapeLayout = JsonUtility.FromJson<GridLayoutProperties>(currentLandscape);
+                    //if (presets.Length > 0) ApplyPreset(presets[0]);
+                    
+                    
+                    return;
+                       
+                }
+                string currentLandscape = JsonUtility.ToJson(presets[_activePreset]);
+                string lastLandscape = JsonUtility.ToJson(_lastPreset);
+
+                if (presets[_activePreset].isActive && currentLandscape != lastLandscape)
+                {
+                    ApplyPreset(presets[_activePreset]);
+                    _lastPreset = JsonUtility.FromJson<GridLayoutProperties>(currentLandscape);
                 }
 
-                string currentPortrait = JsonUtility.ToJson(portraitPreset);
-                string lastPortrait = JsonUtility.ToJson(lastPortraitLayout);
 
-                if (portraitPreset.isActive && currentPortrait != lastPortrait)
-                {
-                    ApplyPreset(portraitPreset);
-                    lastPortraitLayout = JsonUtility.FromJson<GridLayoutProperties>(currentPortrait);
-                }
             };
-
         }
 #endif
 
@@ -75,14 +72,72 @@ namespace Concept.UI
         protected override void Start()
         {
             base.Start();
-                        if (!Application.isPlaying) return;
-            ApplyPreset((Screen.width >= Screen.height) ? landscapePreset : portraitPreset);
+            if (!Application.isPlaying) return;
 
+
+            OnResolutionChanged(Screen.width, Screen.height);
         }
+
 
         private void OnResolutionChanged(int width, int height)
         {
-            ApplyPreset((width >= height) ? landscapePreset : portraitPreset);
+            GridLayoutProperties preset = null;
+            Vector2Int currentRes = new Vector2Int(width, height);
+
+
+            string currentAspect = ScreenUtils.GetAspectLabel(currentRes);
+            GridLayoutProperties closestPreset = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (var p in presets)
+            {
+
+
+                string presetAspect = ScreenUtils.GetAspectLabel(p.resolution);
+                if (presetAspect == "Invalid") continue;
+
+                if (currentAspect != "Invalid" && presetAspect != currentAspect)
+                    continue;
+
+                float dist = Vector2.Distance(currentRes, p.resolution);
+                if (dist < closestDistance)
+                {
+                    closestDistance = dist;
+                    closestPreset = p;
+                }
+            }
+
+            if (closestPreset == null && currentAspect != "Invalid")
+            {
+                foreach (var p in presets)
+                {
+                    string presetAspect = ScreenUtils.GetAspectLabel(p.resolution);
+                    if (presetAspect == "Invalid") continue;
+
+                    float dist = Vector2.Distance(currentRes, p.resolution);
+                    if (dist < closestDistance)
+                    {
+                        closestDistance = dist;
+                        closestPreset = p;
+                    }
+                }
+            }
+
+            if (closestPreset != null)
+            {
+                preset = closestPreset;
+            }
+
+
+
+            if (preset != null)
+            {
+                Debug.Log("Applying preset resolution: " + preset.resolution);
+#if UNITY_EDITOR
+                _activePreset = Array.IndexOf(presets, preset);
+#endif
+                ApplyPreset(preset);
+            }
         }
 
         public void ApplyPreset(GridLayoutProperties preset)
@@ -103,6 +158,7 @@ namespace Concept.UI
     [Serializable]
     public class GridLayoutProperties
     {
+        public Vector2Int resolution;
         public RectOffset padding;
         public Vector2 cellSize;
         public Vector2 spacing;
@@ -115,6 +171,7 @@ namespace Concept.UI
 
 #if UNITY_EDITOR
 
+        [HideInInspector]
         public bool isActive;
 
         public bool IsDifferent(GridLayoutProperties other)
