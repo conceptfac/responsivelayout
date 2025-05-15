@@ -1,3 +1,4 @@
+using Concept.Core;
 using Concept.Helpers;
 using System;
 using UnityEditor;
@@ -60,14 +61,14 @@ namespace Concept.UI
         {
             base.OnEnable();
             _rectTransform = GetComponent<RectTransform>();
-            ScreenUtils.OnResolutionChanged += OnResolutionChanged;
+            ScreenMonitor.OnResolutionChanged += OnResolutionChanged;
 
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            ScreenUtils.OnResolutionChanged -= OnResolutionChanged;
+            ScreenMonitor.OnResolutionChanged -= OnResolutionChanged;
 
         }
 

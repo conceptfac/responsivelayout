@@ -1,3 +1,4 @@
+using Concept.Core;
 using Concept.Helpers;
 using UnityEngine;
 
@@ -12,12 +13,12 @@ namespace Concept.UI
 
         private void OnEnable()
         {
-            ScreenUtils.OnResolutionChanged += OnResolutionChanged;
+            ScreenMonitor.OnResolutionChanged += OnResolutionChanged;
         }
 
         private void OnDisable()
         {
-            ScreenUtils.OnResolutionChanged -= OnResolutionChanged;
+            ScreenMonitor.OnResolutionChanged -= OnResolutionChanged;
 
         }
 

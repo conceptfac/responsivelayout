@@ -30,7 +30,7 @@ namespace Concept.UI
 
             serializedObject.Update();
 
-            PresetAdviceEditor.CheckResolutionMonitor();
+            ScreenMonitorEditor.CheckScreenMonitor();
 
 
             EditorGUILayout.Space();

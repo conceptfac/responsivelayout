@@ -19,7 +19,6 @@ namespace Concept.UI
         private void OnEnable()
         {
             element = (ResponsiveRectTransform)target;
-
         }
 
         public override void OnInspectorGUI()
@@ -38,7 +37,7 @@ namespace Concept.UI
 
             // Exibir a propriedade forceLayoutByOrientation
 
-            PresetAdviceEditor.CheckResolutionMonitor();
+            ScreenMonitorEditor.CheckScreenMonitor();
 
 
             EditorGUILayout.Space();

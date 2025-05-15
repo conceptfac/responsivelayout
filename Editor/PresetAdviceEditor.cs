@@ -16,18 +16,5 @@ public class PresetAdviceEditor : Editor
         );
 
     }
-
-    public static void CheckResolutionMonitor()
-    {
-        InputMonitor monitor = FindFirstObjectByType<InputMonitor>();
-        if (!monitor)
-        {
-            EditorGUILayout.HelpBox(
-                "This component depends on an 'InputMonitor' MonoBehaviour to function correctly at runtime.",
-                MessageType.Error
-            );
-        }
-    }
-
 }
 #endif

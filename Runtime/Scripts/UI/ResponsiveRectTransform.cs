@@ -21,12 +21,12 @@ namespace Concept.UI
         private void OnEnable()
         {
             _rectTransform = GetComponent<RectTransform>();
-            ScreenUtils.OnResolutionChanged += OnResolutionChanged;
+            ScreenMonitor.OnResolutionChanged += OnResolutionChanged;
         }
 
         private void OnDisable()
         {
-            ScreenUtils.OnResolutionChanged -= OnResolutionChanged;
+            ScreenMonitor.OnResolutionChanged -= OnResolutionChanged;
 
         }
 

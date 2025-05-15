@@ -25,7 +25,7 @@ using Concept.Helpers;
         Vector2 gameViewResolution = GameViewResolutionMonitor.GetMainGameViewResolution();
         bool isLandscape = gameViewResolution.x >= gameViewResolution.y;
         EditorGUILayout.Space();
-        PresetAdviceEditor.CheckResolutionMonitor();
+        ScreenMonitorEditor.CheckScreenMonitor();
         EditorGUILayout.LabelField("Responsive Callback Events", EditorStyles.boldLabel);
 
         DrawCallbacksProperties(OnLandscapeOrientation, "Landscape Callbacks", isLandscape);

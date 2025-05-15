@@ -84,7 +84,7 @@ namespace Concept.UI
 
         private void Rebuild()
         {
-
+            
             if (this == null) return;
             _rectTransform.ForceUpdateRectTransforms();
             RectTransform _parentRectTransform = GetComponentInParent<RectTransform>();
