@@ -27,7 +27,6 @@ namespace Concept.UI
         private void OnDisable()
         {
             ScreenMonitor.OnResolutionChanged -= OnResolutionChanged;
-
         }
 
         private void Start()
