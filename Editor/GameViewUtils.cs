@@ -93,6 +93,9 @@ public static class GameViewUtils
         // Pega o nome da build target atual (ex: Android, Standalone, etc.)
         var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup.ToString();
 
+        if (buildTargetGroup == "iPhone")
+            buildTargetGroup = "iOS";
+
         try
         {
             var currentGroup = Enum.Parse(gameViewSizeGroupType, buildTargetGroup);
@@ -104,5 +107,26 @@ public static class GameViewUtils
         }
     }
 
+
+
+    /*
+        private static int GetCurrentGroupTypeIndex()
+        {
+            var gameViewSizeGroupType = typeof(Editor).Assembly.GetType("UnityEditor.GameViewSizeGroupType");
+
+            // Pega o nome da build target atual (ex: Android, Standalone, etc.)
+            var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup.ToString();
+
+            try
+            {
+                var currentGroup = Enum.Parse(gameViewSizeGroupType, buildTargetGroup);
+                return (int)currentGroup;
+            }
+            catch
+            {
+                return 0; // Fallback para Standalone
+            }
+        }
+        */
 }
 #endif
